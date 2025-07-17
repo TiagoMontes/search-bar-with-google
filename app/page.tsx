@@ -1,103 +1,175 @@
+"use client";
+
+import { useState } from "react";
 import Image from "next/image";
+import { AutocompleteInput } from "./components";
+import { PlacePrediction } from "./services";
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [location, setLocation] = useState("");
+  const [checkIn, setCheckIn] = useState("");
+  const [checkOut, setCheckOut] = useState("");
+  const [guests, setGuests] = useState(1);
+  const [showGuestSelector, setShowGuestSelector] = useState(false);
+  const [selectedPlace, setSelectedPlace] = useState<PlacePrediction | null>(null);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const handleSearch = () => {
+    // Aqui você pode implementar a lógica de busca
+    console.log("Buscar:", { 
+      location, 
+      checkIn, 
+      checkOut, 
+      guests,
+      selectedPlace 
+    });
+  };
+
+  const updateGuests = (type: string, action: "add" | "subtract") => {
+    setGuests(prev => {
+      if (type === "adults") {
+        return action === "add" ? prev + 1 : Math.max(1, prev - 1);
+      }
+      return prev;
+    });
+  };
+
+  const handlePlaceSelect = (prediction: PlacePrediction) => {
+    setSelectedPlace(prediction);
+    console.log("Local selecionado:", prediction);
+  };
+
+  return (
+    <div className="min-h-screen flex justify-center items-center bg-gradient-to-br from-blue-50 to-indigo-100">
+      <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-4xl">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            SearchFinder
+          </h1>
+          <p className="text-gray-600">
+            Encontre o lugar perfeito para sua viagem
+          </p>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+        <div className="space-y-6">
+          {/* Campo de Localização com Autocomplete */}
+          <div className="relative">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Para onde?
+            </label>
+            <AutocompleteInput
+              value={location}
+              onChange={setLocation}
+              onSelect={handlePlaceSelect}
+              placeholder="Digite o destino (ex: Rio B, São Paulo, etc.)"
+              className="w-full"
+            />
+            {selectedPlace && (
+              <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-lg">
+                <p className="text-sm text-green-800">
+                  <strong>Local selecionado:</strong> {selectedPlace.description}
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Campos de Data */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="relative">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Check-in
+              </label>
+              <input
+                type="date"
+                value={checkIn}
+                onChange={(e) => setCheckIn(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition-all"
+              />
+            </div>
+
+            <div className="relative">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Check-out
+              </label>
+              <input
+                type="date"
+                value={checkOut}
+                onChange={(e) => setCheckOut(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition-all"
+              />
+            </div>
+          </div>
+
+          {/* Seletor de Hóspedes */}
+          <div className="relative">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Hóspedes
+            </label>
+            <button
+              onClick={() => setShowGuestSelector(!showGuestSelector)}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition-all text-left flex justify-between items-center"
+            >
+              <span>{guests} hóspede{guests !== 1 ? 's' : ''}</span>
+              <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            {/* Guest Selector Dropdown */}
+            {showGuestSelector && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-300 rounded-lg shadow-lg z-10 p-4">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-medium">Adultos</div>
+                      <div className="text-sm text-gray-500">13 anos ou mais</div>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <button
+                        onClick={() => updateGuests("adults", "subtract")}
+                        className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:border-gray-400 transition-colors"
+                      >
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+                        </svg>
+                      </button>
+                      <span className="w-8 text-center">{guests}</span>
+                      <button
+                        onClick={() => updateGuests("adults", "add")}
+                        className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:border-gray-400 transition-colors"
+                      >
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Botão de Busca */}
+          <button
+            onClick={handleSearch}
+            className="w-full bg-red-500 text-white py-4 px-6 rounded-lg font-semibold text-lg hover:bg-red-600 transition-colors duration-200 transform hover:scale-105"
+          >
+            Buscar Acomodações
+          </button>
+        </div>
+
+        {/* Informações sobre a API */}
+        <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <h3 className="text-sm font-semibold text-blue-900 mb-2">
+            💡 Como usar o autocomplete:
+          </h3>
+          <ul className="text-sm text-blue-800 space-y-1">
+            <li>• Digite pelo menos 2 caracteres para ver sugestões</li>
+            <li>• Use as setas do teclado para navegar</li>
+            <li>• Pressione Enter para selecionar</li>
+            <li>• Exemplo: digite "Rio B" para ver "Rio Branco, AC, Brasil"</li>
+          </ul>
+        </div>
+      </div>
     </div>
   );
 }
